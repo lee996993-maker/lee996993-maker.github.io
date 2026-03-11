@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>生日快乐</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Microsoft YaHei", sans-serif;
+        }
+        body {
+            background-color: #fef7ff;
+            overflow: hidden;
+            height: 100vh;
+            width: 100vw;
+            touch-action: auto;
+        }
+
+        /* 画面1：密码弹窗（保持原有样式，确保正常显示） */
+        #screen1 {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #ff9a9e 0%, #fad0c4 99%, #fad0c4 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+        .popup {
+            background: white;
+            padding: 40px 25px;
+            border-radius: 20px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+            width: 85%;
+            max-width: 400px;
+            text-align: center;
+            position: relative;
+            z-index: 10000;
+        }
+        .popup h2 {
+            color: #ff6b9d;
+            margin-bottom: 25px;
+            font-size: 26px;
+            font-weight: bold;
+        }
+        #password {
+            width: 100%;
+            padding: 16px 18px;
+            border: 2px solid #ffc0cb;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            font-size: 18px;
+            outline: none;
+            -webkit-appearance: none;
+            appearance: none;
+            height: 55px;
+        }
+        #password:focus {
+            border-color: #ff6b9d;
+            box-shadow: 0 0 10px rgba(255, 107, 157, 0.4);
+        }
+        .btn-group {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+        }
+        .btn {
+            padding: 14px 30px;
+            border: none;
+            border-radius: 50px;
+            font-size: 17px;
+            cursor: pointer;
+            min-width: 100px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .confirm-btn {
+            background: #ff6b9d;
+            color: white;
+        }
+        .cancel-btn {
+            background: #e0e0e0;
+            color: #333;
+        }
+        .confirm-btn:active {
+            background: #e85a8b;
+            transform: scale(1.02);
+        }
+        .cancel-btn:active {
+            background: #d0d0d0;
+            transform: scale(1.02);
+        }
+
+        /* 画面2：聊天气泡（保持原有样式） */
+        #screen2 {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #fff0f5;
+            display: none;
+            padding: 10px;
+            overflow: hidden;
+            z-index: 9998;
+        }
+        .bubble {
+            position: absolute;
+            padding: 12px 18px;
+            border-radius: 18px;
+            border-bottom-left-radius: 5px;
+            background: linear-gradient(45deg, #ffc6e5, #ff99cc);
+            color: #c71585;
+            font-size: 15px;
+            font-weight: 600;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+            z-index: 100;
+            animation: pop 0.5s ease forwards;
+            background-image: url('https://img.icons8.com/fluency/48/000000/kitty.png');
+            background-repeat: no-repeat;
+            background-size: 20px;
+            background-position: 8px center;
+            padding-left: 38px;
+            max-width: 50%;
+            min-width: 120px;
+            max-height: 70px;
+            line-height: 1.4;
+        }
+        @keyframes pop {
+            0% { opacity: 0; transform: scale(0.8) translateY(10px); }
+            100% { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        /* 画面3：仅修改这里！适配手机竖屏的渐变文字 */
+        #screen3 {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(180deg, #ffebf0, #ffd1dc);
+            display: none;
+            flex-direction: column;
+            justify-content: center; /* 垂直居中 */
+            align-items: center;     /* 水平居中 */
+            z-index: 9997;
+            padding: 40px 20px;      /* 避免被手机状态栏遮挡 */
+        }
+        /* 渐变深粉色文字核心样式（手机竖屏适配） */
+        .gradient-text {
+            font-weight: bold;
+            text-align: center;
+            background: linear-gradient(45deg, #c71585, #ff6b9d, #ff1493); /* 深粉渐变 */
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: textPop 0.8s ease forwards;
+            width: 100%; /* 占满宽度，确保居中 */
+        }
+        /* 第一行：静静（手机竖屏超大号） */
+        .text1 {
+            font-size: clamp(50px, 20vw, 90px); /* 最小50px，最大90px，适配所有手机 */
+            margin-bottom: 30px; /* 与第二行保持间距 */
+            animation-delay: 0.3s;
+        }
+        /* 第二行：happybirthday（手机竖屏大号） */
+        .text2 {
+            font-size: clamp(25px, 10vw, 50px); /* 最小25px，最大50px */
+            animation-delay: 1.2s;
+        }
+        /* 文字弹出动画 */
+        @keyframes textPop {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 音频元素（生日歌） -->
+    <audio id="birthdayMusic" loop>
+        <source src="https://music.163.com/song/media/outer/url?id=1427961741.mp3" type="audio/mpeg">
+    </audio>
+
+    <!-- 画面1 -->
+    <div id="screen1">
+        <div class="popup">
+            <h2>我想静静</h2>
+            <input type="text" id="password" placeholder="请输入密码" autocomplete="off">
+            <div class="btn-group">
+                <button class="btn confirm-btn" id="confirmBtn">确定</button>
+                <button class="btn cancel-btn" id="cancelBtn">取消</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 画面2 -->
+    <div id="screen2"></div>
+
+    <!-- 画面3：修改后的文字展示 -->
+    <div id="screen3">
+        <div class="gradient-text text1">静静</div>
+        <div class="gradient-text text2">happybirthday</div>
+    </div>
+
+    <script>
+        // 初始化（保持原有逻辑）
+        document.addEventListener('DOMContentLoaded', function() {
+            const passwordInput = document.getElementById('password');
+            const confirmBtn = document.getElementById('confirmBtn');
+            const cancelBtn = document.getElementById('cancelBtn');
+            const birthdayMusic = document.getElementById('birthdayMusic');
+            
+            passwordInput.focus({ preventScroll: true });
+            
+            // 确定按钮（密码正确才跳转+播放音乐）
+            confirmBtn.addEventListener('click', function() {
+                const pwd = passwordInput.value.trim();
+                if (pwd === '0322') {
+                    birthdayMusic.play().catch(err => {
+                        console.log('音乐播放需要用户交互，已尝试自动播放');
+                    });
+                    goToScreen2();
+                } else {
+                    alert('密码不对哦，再试试～');
+                    passwordInput.focus();
+                }
+            });
+            
+            // 取消按钮（不跳转）
+            cancelBtn.addEventListener('click', function() {
+                passwordInput.value = '';
+                passwordInput.focus();
+            });
+            
+            // 回车提交
+            passwordInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') confirmBtn.click();
+            });
+        });
+
+        // 跳转画面2（保持原有逻辑）
+        function goToScreen2() {
+            document.getElementById('screen1').style.display = 'none';
+            document.getElementById('screen2').style.display = 'block';
+            createBubbles();
+        }
+
+        // 生成聊天气泡（保持原有逻辑）
+        function createBubbles() {
+            const screen2 = document.getElementById('screen2');
+            const w = screen2.clientWidth;
+            const h = screen2.clientHeight;
+            const cols = 5;
+            const rows = 6;
+            const cellW = w / cols;
+            const cellH = h / rows;
+            const used = new Set();
+
+            const blessings = [
+                "小文祝静静生日快乐🎂", "愿静静每天都超甜✨", "静静生日快乐，岁岁平安🥳",
+                "小文陪静静过甜甜的生日🎈", "静静永远18岁哦💖", "生日快乐呀我的静静🎁",
+                "小文祝静静暴富暴美💸", "愿静静被温柔以待🌷", "生日快乐！吃好多好吃的🍰",
+                "静静生日快乐，万事顺意🌟", "小文的祝福请查收💌", "愿静静每天都开开心心😜",
+                "生日快乐！好运连连🍀", "静静要一直可爱哦🥰", "小文陪你过生日啦🎊",
+                "生日快乐！平安喜乐🙏", "愿静静梦想都实现💫", "小文祝静静越来越美💄",
+                "生日快乐！笑口常开😄", "静静生日快乐，福气满满🧧", "小文的专属祝福来啦🎀",
+                "愿静静每天都有小惊喜🎁", "生日快乐！健康无忧💪", "静静超棒的！生日快乐🥳",
+                "小文祝静静心想事成💖", "生日快乐！甜甜蜜蜜🍬", "愿静静永远闪闪发光✨",
+                "小文爱你哦！生日快乐😘", "生日快乐！一切都好🌈", "静静生日快乐，未来可期🚀"
+            ];
+
+            blessings.forEach((msg, idx) => {
+                setTimeout(() => {
+                    const bubble = document.createElement('div');
+                    bubble.className = 'bubble';
+                    bubble.textContent = msg;
+
+                    // 网格定位避免重叠
+                    let col, row, key;
+                    do {
+                        col = Math.floor(Math.random() * cols);
+                        row = Math.floor(Math.random() * rows);
+                        key = `${col}-${row}`;
+                    } while (used.has(key));
+                    used.add(key);
+
+                    // 计算位置
+                    const cx = col * cellW + cellW/2;
+                    const cy = row * cellH + cellH/2;
+                    const randX = Math.random() * 20 - 10;
+                    const randY = Math.random() * 20 - 10;
+                    const x = cx - 60 + randX;
+                    const y = cy - 25 + randY;
+
+                    bubble.style.left = `${x}px`;
+                    bubble.style.top = `${y}px`;
+                    screen2.appendChild(bubble);
+
+                    // 最后一个气泡后跳转画面3
+                    if (idx === blessings.length - 1) {
+                        setTimeout(() => {
+                            screen2.style.display = 'none';
+                            document.getElementById('screen3').style.display = 'flex';
+                        }, 3000);
+                    }
+                }, idx * 200);
+            });
+        }
+    </script>
+</body>
+</html>
