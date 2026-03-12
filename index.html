@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>生日快乐</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Microsoft YaHei", sans-serif;
+        }
+        body {
+            background-color: #fef7ff;
+            overflow: hidden;
+            height: 100vh;
+            width: 100vw;
+            touch-action: auto;
+        }
+
+        /* 密码页 */
+        #screen1 {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #ff9a9e 0%, #ff9a9e 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+        .popup {
+            background: white;
+            padding: 40px 25px;
+            border-radius: 20px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+            width: 85%;
+            max-width: 400px;
+            text-align: center;
+            position: relative;
+            z-index: 10000;
+        }
+        .popup h2 {
+            color: #ff6b9d;
+            margin-bottom: 25px;
+            font-size: 26px;
+            font-weight: bold;
+        }
+        #password {
+            width: 100%;
+            padding: 16px 18px;
+            border: 2px solid #ffc0cb;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            font-size: 18px;
+            outline: none;
+            -webkit-appearance: none;
+            appearance: none;
+            height: 55px;
+        }
+        #password:focus {
+            border-color: #ff6b9d;
+            box-shadow: 0 0 10px rgba(255, 107, 157, 0.4);
+        }
+        .btn-group {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+        }
+        .btn {
+            padding: 14px 30px;
+            border: none;
+            border-radius: 50px;
+            font-size: 17px;
+            cursor: pointer;
+            min-width: 100px;
+            height: 50px;
+            display: flex; align-items: center; justify-content: center;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .confirm-btn { background: #ff6b9d; color: white; }
+        .cancel-btn { background: #e0e0e0; color: #333; }
+        .confirm-btn:active { background: #e85a8b; transform: scale(1.02); }
+        .cancel-btn:active { background: #d0d0d0; transform: scale(1.02); }
+
+        /* 气泡页 */
+        #screen2 {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #fff0f5; display: none; padding: 10px; overflow: hidden; z-index: 9998;
+        }
+        .bubble {
+            position: absolute; padding: 12px 18px; border-radius: 18px; border-bottom-left-radius: 5px;
+            background: linear-gradient(45deg, #ffc6e5, #ff99cc); color: #c71585; font-size: 15px; font-weight: 600;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.1); z-index: 100;
+            animation: pop 0.5s ease forwards;
+            background-image: url('https://picsum.photos/200/200');
+            background-repeat: no-repeat; background-size: 20px; background-position: 8px center;
+            padding-left: 38px; max-width: 50%; min-width: 120px; max-height: 70px; line-height: 1.4;
+        }
+        @keyframes pop { 0%{opacity:0;transform:scale(0.8) translateY(10px);}100%{opacity:1;transform:scale(1) translateY(0);} }
+
+        /* 照片墙 */
+        #screen3 {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #ffe6ef; display: none; overflow: hidden; z-index: 9997;
+        }
+        .photo-item {
+            position: absolute; width: 85px; height: 115px; object-fit: cover; border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2); opacity: 0; transform: scale(0.5);
+            transition: all 1.2s ease; /* 照片弹出更慢 */
+        }
+        .photo-item.show { opacity: 1; transform: scale(1); }
+
+        /* 寄语页 */
+        #screen4 {
+            position: fixed; top:0; left:0; width:100%; height:100%;
+            background: linear-gradient(180deg, #ffebf0, #ffd1dc);
+            display: none; flex-direction: column; justify-content: center; align-items: center;
+            z-index: 9997; padding: 40px 20px; text-align: center;
+        }
+
+        /* 生日页 */
+        #screen5 {
+            position: fixed; top:0; left:0; width:100%; height:100%;
+            background: linear-gradient(180deg, #ffebf0, #ffd1dc);
+            display: none; flex-direction: column; justify-content: center; align-items: center;
+            z-index: 9997; padding: 40px 20px;
+        }
+
+        .gradient-text {
+            font-weight: bold; text-align: center;
+            background: linear-gradient(45deg, #c71585, #ff6b9d, #ff1493);
+            -webkit-background-clip: text; background-clip: text;
+            color: transparent; opacity: 0; transform: translateY(20px);
+            animation: textPop 0.8s ease forwards; width: 100%;
+        }
+        .wish-text { font-size: clamp(22px, 6vw, 36px); margin:12px 0; animation-delay:0.4s; }
+        .text1 { font-size: clamp(50px, 20vw, 90px); margin-bottom:30px; animation-delay:0.3s; }
+        .text2 { font-size: clamp(25px,10vw,50px); animation-delay:1.2s; }
+        @keyframes textPop { to{opacity:1;transform:translateY(0);} }
+    </style>
+</head>
+<body>
+
+<!-- 1 密码页 -->
+<div id="screen1">
+  <div class="popup">
+    <h2>我想静静</h2>
+    <input type="text" id="password" placeholder="请输入密码" autocomplete="off">
+    <div class="btn-group">
+      <button class="btn confirm-btn" id="confirmBtn">确定</button>
+      <button class="btn cancel-btn" id="cancelBtn">取消</button>
+    </div>
+  </div>
+</div>
+
+<!-- 2 气泡页 -->
+<div id="screen2"></div>
+
+<!-- 3 照片页 -->
+<div id="screen3"></div>
+
+<!-- 4 寄语页 -->
+<div id="screen4">
+  <div class="gradient-text wish-text">相识6年有余</div>
+  <div class="gradient-text wish-text" style="animation-delay:0.8s">青春与你共度</div>
+  <div class="gradient-text wish-text" style="animation-delay:1.2s">19岁愿我们长长久久</div>
+</div>
+
+<!-- 5 生日页 -->
+<div id="screen5">
+  <div class="gradient-text text1">静静</div>
+  <div class="gradient-text text2">happy birthday</div>
+</div>
+
+<script>
+// 密码
+document.addEventListener('DOMContentLoaded', function() {
+  const passwordInput = document.getElementById('password');
+  const confirmBtn = document.getElementById('confirmBtn');
+  const cancelBtn = document.getElementById('cancelBtn');
+
+  confirmBtn.addEventListener('click', function() {
+    const pwd = passwordInput.value.trim();
+    if (pwd === '0322') { goToScreen2(); } else { alert('密码不对哦，再试试～'); passwordInput.focus(); }
+  });
+  cancelBtn.addEventListener('click', function() { passwordInput.value = ''; passwordInput.focus(); });
+  passwordInput.addEventListener('keydown', function(e) { if (e.key === 'Enter') confirmBtn.click(); });
+});
+
+// 气泡页
+function goToScreen2() {
+  document.getElementById('screen1').style.display = 'none';
+  document.getElementById('screen2').style.display = 'block';
+  createBubbles();
+}
+
+function createBubbles() {
+  const screen2 = document.getElementById('screen2');
+  const w = screen2.clientWidth;
+  const h = screen2.clientHeight;
+
+  const blessings = [
+    "小文祝静静生日快乐🎂", "愿静静每天都超甜✨", "静静生日快乐，岁岁平安🥳",
+    "小文陪静静过甜甜的生日🎈", "静静永远18岁哦💖", "生日快乐呀我的静静🎁",
+    "小文祝静静暴富暴美💸", "愿静静被温柔以待🌷", "生日快乐！吃好多好吃的🍰",
+    "静静生日快乐，万事顺意🌟", "小文的专属祝福请查收💌", "愿静静每天都开开心心😜",
+    "生日快乐！好运连连🍀", "静静要一直可爱哦🥰", "小文陪你过生日啦🎊",
+    "生日快乐！平安喜乐🙏", "愿静静梦想都实现💫", "小文祝静静越来越美💄",
+    "生日快乐！笑口常开😄", "静静生日快乐，福气满满🧧", "小文的专属祝福来啦🎀",
+    "愿静静每天都有小惊喜🎁", "生日快乐！健康无忧💪", "静静超棒的！生日快乐🥳",
+    "小文祝静静心想事成💖", "生日快乐！甜甜蜜蜜🍬", "愿静静永远闪闪发光✨",
+    "小文爱你哦！生日快乐😘", "生日快乐！一切都好🌈", "静静生日快乐，未来可期🚀"
+  ];
+
+  blessings.forEach((msg, idx) => {
+    setTimeout(() => {
+      const bubble = document.createElement('div');
+      bubble.className = 'bubble';
+      bubble.textContent = msg;
+      const x = Math.random() * (w - 150);
+      const y = Math.random() * (h - 80);
+      bubble.style.left = `${x}px`;
+      bubble.style.top = `${y}px`;
+      screen2.appendChild(bubble);
+      if (idx === blessings.length - 1) {
+        setTimeout(() => {
+          screen2.style.display = 'none';
+          goToScreen3_Photo();
+        }, 5000);
+      }
+    }, idx * 400);
+  });
+}
+
+// 照片页 —— 更慢、更久、更温柔
+function goToScreen3_Photo() {
+  const s3 = document.getElementById('screen3');
+  s3.style.display = 'block';
+
+  const photos = [
+    "https://s41.ax1x.com/2026/03/12/pek4EqI.jpg",
+    "https://s41.ax1x.com/2026/03/12/pek4edP.jpg",
+    "https://s41.ax1x.com/2026/03/12/pek4QzQ.jpg",
+    "https://s41.ax1x.com/2026/03/12/pek4ZZt.jpg",
+    "https://s41.ax1x.com/2026/03/12/pek4mIf.jpg",
+    "https://s41.ax1x.com/2026/03/12/pek4KJS.jpg",
+    "https://s41.ax1x.com/2026/03/12/pek43ss.jpg",
+    "https://s41.ax1x.com/2026/03/12/pek4MRg.jpg",
+    "https://i.ibb.co/YzkCvS8/d1ecbef9579d95e8ea0bb8529a7497c5.jpg",
+    "https://i.ibb.co/W4DH7R0f/b7b214b739cc56e2e34281c0cf4102b3.jpg",
+    "https://i.ibb.co/5gRSTVKD/9fce1123dce91ce45fab021daabceefa.jpg",
+    "https://i.ibb.co/qFjzyWQR/89da4076ab88b584ea8677d3e5f7138e.jpg",
+    "https://i.ibb.co/h1Tphfrx/2e7e8a3a6cce5fecd258aa76637e311f.jpg",
+    "https://i.ibb.co/23XH1ZnN/49f4c0243f3e88358376588243ef63a8.jpg",
+    "https://i.ibb.co/MkS8nY9j/a459c0d7763cae852fde24990023a1d1.jpg"
+  ];
+
+  const w = window.innerWidth;
+  const h = window.innerHeight;
+  const pw = 85;
+  const ph = 115;
+  const cols = 5;
+  const rows = 3;
+  const cellW = w / cols;
+  const cellH = h / rows;
+
+  photos.forEach((url, i) => {
+    setTimeout(() => {
+      const img = new Image();
+      img.src = url;
+      img.className = 'photo-item';
+      const col = i % cols;
+      const row = Math.floor(i / cols);
+      const baseX = col * cellW + (cellW - pw)/2;
+      const baseY = row * cellH + (cellH - ph)/2;
+      const offsetX = (Math.random()-0.5)*80;
+      const offsetY = (Math.random()-0.5)*80;
+      img.style.left = baseX + offsetX + 'px';
+      img.style.top = baseY + offsetY + 'px';
+      s3.appendChild(img);
+      setTimeout(() => img.classList.add('show'), 50);
+    }, i * 800); // 间隔更久
+  });
+
+  // 照片页停留更久
+  setTimeout(() => {
+    s3.style.display = 'none';
+    document.getElementById('screen4').style.display = 'flex';
+    setTimeout(() => {
+      document.getElementById('screen4').style.display = 'none';
+      document.getElementById('screen5').style.display = 'flex';
+    }, 5000);
+  }, photos.length * 800 + 12000);
+}
+</script>
+</body>
+</html>
